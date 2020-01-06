@@ -1,5 +1,5 @@
 class BSTNode():
-    def __init__(key, data, p = None):
+    def __init__(self, key, data, p = None):
         self.key = key
         self.data = data
         self.p = p
@@ -12,8 +12,14 @@ class BSTNode():
     def __eq__(a, b):
         return a.key == b.key
 
+    def __ge__(a, b):
+        return a.key >= b.key
+
+    def __str__(self):
+        return str(self.key)
+
 class BST():
-    def __init__(recursive = True):
+    def __init__(self, recursive = True):
         self.root = None
         self.recursiveMode = recursive
 
@@ -25,6 +31,11 @@ class BST():
                 self.__insertRecursive(self.root, newNode)
             else:
                 self.__insertLooping(newNode)
+
+    def InsertBatch(self, keys, data = []):
+        for i in range(len(keys)):
+            if i < len(data): self.Insert(keys[i], data[i])
+            else: self.Insert(keys[i])
 
     def __insertRecursive(self, rootNode, newNode):
         if newNode < rootNode:
@@ -68,16 +79,38 @@ class BST():
             else: node = node.left
         return None
 
-    def InorderTravel(self):
+    def InorderTraversal(self):
         buf = []
-        self.__inorderTravel(self.root, buf)
+        self.__inorderTraversal(self.root, buf)
         return buf
 
-    def __inorderTravel(self, node, buf):
+    def __inorderTraversal(self, node, buf):
         if node is not None:
-            self.__inorderTravel(node.left, buf)
+            self.__inorderTraversal(node.left, buf)
             buf.append(node.key)
-            self.__inorderTravel(node.right, buf)
+            self.__inorderTraversal(node.right, buf)
+
+    def PreorderTraversal(self):
+        buf = []
+        self.__preorderTraversal(self.root, buf)
+        return buf
+
+    def __preorderTraversal(self, node, buf):
+        if node is not None:
+            buf.append(node.key)
+            self.__preorderTraversal(node.left, buf)
+            self.__preorderTraversal(node.right, buf)
+
+    def PostorderTraversal(self):
+        buf = []
+        self.__postorderTraversal(self.root, buf)
+        return buf
+
+    def __postorderTraversal(self, node, buf):
+        if node is not None:
+            self.__postorderTraversal(node.left, buf)
+            self.__postorderTraversal(node.right, buf)
+            buf.append(node.key)
 
     def MinNode(self):
         return self.__treeMin(self.root)
@@ -91,9 +124,79 @@ class BST():
     def MaxNode(self):
         return self.__treeMax(self.root)
 
-    def.__maxNode(self, rootNode):
+    def __maxNode(self, rootNode):
         if rootNode is None: raise Exception("root node is None!")
         while (rootNode.right is not None):
             rootNode = rootNode.right
         return rootNode
 
+    def Successor(self, node):
+        if node is None: raise Exception("input node is None!")
+        if node.right is not None: return self.__minNode(node.right)
+        parentNode = node.p
+        while parentNode is not None and node == parentNode.right:
+            node = parentNode
+            parentNode = parentNode.p
+        return parentNode
+
+    def Predecessor(self, node):
+        if node is None: raise Exception("input node is None!")
+        if node.left is not None: return self.__maxNode(node.left)
+        parentNode = node.p
+        while parentNode is not None and node == parentNode.left:
+            node = parentNode
+            parentNode = parentNode.p
+        return parentNode
+
+    def __transplant(self, u, v): #replace u with v
+        if u is None: raise Exception("input node u is None")
+        if u.p is None: self.root = v
+        elif u.p.left == u: u.p.left = v
+        else: u.p.right = v
+        if v is not None: v.p = u.p
+
+    def __deleteNode(self, node):
+        if node is None: raise Exception("input node is None")
+        if node.left is None: self.__transplant(node, node.right)
+        elif node.right is None: self.__transplant(node, node.left)
+        else:
+            successor = self.__minNode(node.right)
+            if successor.p != node:
+                self.__transplant(successor, successor.right)
+                successor.right = node.right
+                node.right.p = successor
+            self.__transplant(node, successor)
+            successor.left = node.left
+            node.left.p = successor
+
+    def Delete(self, key):
+        node = self.Find(key)
+        if node is not None: self.__deleteNode(node)
+
+    def __invarianceCheck(self, node):
+        if node is None: return True
+        result = True
+        if node.right is not None: result = result and (node.right >= node)
+        if node.left is not None: result = result and (node.left < node)
+        return result and (self.__invarianceCheck(node.right)) and (self.__invarianceCheck(node.left))
+
+    def InvarianceCheck(self):
+        return self.__invarianceCheck(self.root)
+
+    def __treeStringRecursive(self, node, level, side = 'root'):
+        if node is None: return ""
+        string = self.__treeStringRecursive(node.right, level + 1, 'R')
+        string += '-'*6*level + ' ' + str(node) + '(' + side + ')' + '\n'
+        string += self.__treeStringRecursive(node.left, level + 1, 'L')
+        return string
+
+    def __treeString(self):
+        return self.__treeStringRecursive(self.root, 0)
+
+    def __str__(self):
+        result = "Inorder travel:\n"
+        result += str(self.InorderTraversal()) + '\n'
+        result += "Tree:\n"
+        result += self.__treeString()
+        result += "Invariance check: " + str(self.InvarianceCheck()) +'\n'
+        return result
