@@ -5,8 +5,11 @@ class LLNode(object):
         self.prev = None
         self.next = None
 
+    def __str__(self):
+        return str(self.key)
+
 class LinkedList(object):
-    def__init__(self):
+    def __init__(self):
         self.head = None
         self.tail = None
         self.length = 0
@@ -17,9 +20,20 @@ class LinkedList(object):
     def __str__(self):
         result = "# "
         for node in self.IterateForward():
-            result += node.key + " -> "
-        result += '#'
+            result += (str(node.key) + " <-> ")
+        result += '#\n'
+        result += f"CheckInvariant: {self.CheckInvariant()}\n"
         return result
+
+    def PushHeadBatch(self, keys, data = []):
+        for i in range(len(keys)):
+            if i >= len(data): self.PushHead(keys[i])
+            else: self.PushHead(keys[i], data[i])
+
+    def PushTailBatch(self, keys, data = []):
+        for i in range(len(keys)):
+            if i >= len(data): self.PushTail(keys[i])
+            else: self.PushTail(keys[i], data[i])
 
     def PushHead(self, key, data = None):
         newNode = LLNode(key, data)
@@ -74,7 +88,7 @@ class LinkedList(object):
         else:
             self.tail = prevNode
             prevNode.next = None
-        tailNone.prev = None
+        tailNode.prev = None
         return tailNode
 
     def IterateForward(self):
@@ -91,13 +105,101 @@ class LinkedList(object):
 
     def FindKey(self, key, fwd = True):
         if fwd:
-            for node in IterateForward():
+            for node in self.IterateForward():
                 if node.key == key: return node
         else:
-            for node in IterateBackward():
+            for node in self.IterateBackward():
                 if node.key == key: return node
         return None
 
+    def InsertAfter(self, node, key, data = None):
+        if node is None: raise Exception("None node input")
+        if node == self.tail:
+            self.PushTail(key, data)
+            return
+        self.length += 1
+        newNode = LLNode(key, data)
+        nextNode = node.next
+        newNode.prev = node
+        newNode.next = nextNode
+        node.next = newNode
+        nextNode.prev = newNode
 
+    def InsertBefore(self, node, key, data = None):
+        if node is None: raise Exception("None node input")
+        if node == self.head:
+            self.PushHead(key, data)
+            return
+        self.length += 1
+        newNode = LLNode(key, data)
+        prevNode = node.prev
+        newNode.prev = prevNode
+        newNode.next = node
+        node.prev = newNode
+        prevNode.next = newNode
 
+    def IncreasementPush(self, key, data = None):
+        if self.head == None:
+            self.PushHead(key, data)
+            return
+        for node in self.IterateBackward():
+            if key > node.key:
+                self.InsertAfter(node, key, data)
+                return
+        self.PushHead(key, data)
 
+    def DecreasementPush(self, key, data = None):
+        if self.head == None:
+            self.PushHead(key, data)
+            return
+        for node in self.IterateForward():
+            if key > node.key:
+                self.InsertBefore(node, key, data)
+                return
+        self.PushTail(key, data)
+
+    def RemoveNode(self, node):
+        if node is None: raise Exception("input node is None")
+        if node == self.head: return self.PopHead()
+        elif node == self.tail: return self.PopTail()
+        else:
+            prevNode = node.prev
+            nextNode = node.next
+            prevNode.next = nextNode
+            nextNode.prev = prevNode
+            self.length -= 1
+        node.prev = None
+        node.next = None
+        return node
+
+    def RemoveNthNode(self, nth):
+        node = None
+        if nth >= self.length: raise Exception("input out of range")
+        if nth == 0: return self.PopHead()
+        elif nth == (self.length - 1): return self.PopTail()
+        else:
+            for i, n in enumerate(self.IterateForward()):
+                if i == nth:
+                    node = n
+                    break
+            prevNode = node.prev
+            nextNode = node.next
+            prevNode.next = nextNode
+            nextNode.prev = prevNode
+            self.length -= 1
+        node.prev = None
+        node.next = None
+        return node
+
+    def RemoveAll(self):
+        self.head = None
+        self.tail = None
+        self.length = 0
+
+    def CheckInvariant(self):
+        if self.head is None and self.tail is None and self.length == 0: return True
+        if (self.head is None and self.tail is not None) or (self.head is not None and self.tail is None): return False
+        n = 0
+        for i, _ in enumerate(self.IterateForward()): n = i
+        if (n + 1) == self.length: return True
+        return False
