@@ -1,4 +1,4 @@
-class BSTNode():
+class BSTNode(object):
     def __init__(self, key, data, p = None):
         self.key = key
         self.data = data
@@ -18,7 +18,7 @@ class BSTNode():
     def __str__(self):
         return str(self.key)
 
-class BST():
+class BST(object):
     def __init__(self, recursive = True):
         self.root = None
         self.recursiveMode = recursive
@@ -28,28 +28,28 @@ class BST():
         if self.root is None: self.root = newNode
         else:
             if self.recursiveMode:
-                self.__insertRecursive(self.root, newNode)
+                self._insertRecursive(self.root, newNode)
             else:
-                self.__insertLooping(newNode)
+                self._insertLooping(newNode)
 
     def InsertBatch(self, keys, data = []):
         for i in range(len(keys)):
             if i < len(data): self.Insert(keys[i], data[i])
             else: self.Insert(keys[i])
 
-    def __insertRecursive(self, rootNode, newNode):
+    def _insertRecursive(self, rootNode, newNode):
         if newNode < rootNode:
-            if rootNode.left is not None: self.__insertRecursive(rootNode.left, newNode)
+            if rootNode.left is not None: self._insertRecursive(rootNode.left, newNode)
             else:
                 newNode.p = rootNode
                 rootNode.left = newNode
         else:
-            if rootNode.right is not None: self.__insertRecursive(rootNode.right, newNode)
+            if rootNode.right is not None: self._insertRecursive(rootNode.right, newNode)
             else:
                 newNode.p = rootNode
                 rootNode.right = newNode
 
-    def __insertLooping(self, newNode):
+    def _insertLooping(self, newNode):
         pNode = None
         rootNode = self.root
         while (rootNode is not None):
@@ -172,6 +172,7 @@ class BST():
     def Delete(self, key):
         node = self.Find(key)
         if node is not None: self.__deleteNode(node)
+        return node
 
     def __invarianceCheck(self, node):
         if node is None: return True

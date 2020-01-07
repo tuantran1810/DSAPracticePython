@@ -20,5 +20,3 @@ while(True):
         print(bst)
     elif inpArgs[0] == "Min": print(bst.MinNode())
     elif inpArgs[0] == "Max": print(bst.MaxNode())
-
-
