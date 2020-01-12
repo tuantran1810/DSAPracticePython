@@ -5,6 +5,12 @@ class LLNode(object):
         self.prev = None
         self.next = None
 
+    def __lt__(a, b):
+        return a.key < b.key
+
+    def __gt__(a, b):
+        return a.key > b.key
+
     def __str__(self):
         return str(self.key)
 
@@ -114,7 +120,7 @@ class LinkedList(object):
 
     def InsertAfter(self, node, key, data = None):
         if node is None: raise Exception("None node input")
-        if node == self.tail:
+        if node is self.tail:
             self.PushTail(key, data)
             return
         self.length += 1
@@ -127,7 +133,7 @@ class LinkedList(object):
 
     def InsertBefore(self, node, key, data = None):
         if node is None: raise Exception("None node input")
-        if node == self.head:
+        if node is self.head:
             self.PushHead(key, data)
             return
         self.length += 1
@@ -160,8 +166,8 @@ class LinkedList(object):
 
     def RemoveNode(self, node):
         if node is None: raise Exception("input node is None")
-        if node == self.head: return self.PopHead()
-        elif node == self.tail: return self.PopTail()
+        if node is self.head: return self.PopHead()
+        elif node is self.tail: return self.PopTail()
         else:
             prevNode = node.prev
             nextNode = node.next
