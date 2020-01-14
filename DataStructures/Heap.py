@@ -39,14 +39,14 @@ class Heap(object):
         return len(self.__array) - 1
 
     def __maxReheapDown(self, idx):
-        leftIdx = __left(idx)
-        rightIdx = __right(idx)
+        leftIdx = self.__left(idx)
+        rightIdx = self.__right(idx)
         largest = idx
         if leftIdx > 0 and self.__array[leftIdx] > self.__array[idx]: largest = leftIdx
-        if rightIdx > 0 and self.__array[rightIdx] > self.__array[idx]: largest = rightIdx
+        if rightIdx > 0 and self.__array[rightIdx] > self.__array[largest]: largest = rightIdx
         if largest != idx:
             self.__array[largest], self.__array[idx] = self.__array[idx], self.__array[largest]
-            self.__maxHeapify(largest)
+            self.__maxReheapDown(largest)
 
     def __maxReheapUp(self, idx):
         pIdx = self.__parent(idx)
@@ -55,37 +55,40 @@ class Heap(object):
             self.__maxReheapUp(pIdx)
 
     def __minReheapDown(self, idx):
-        leftIdx = __left(idx)
-        rightIdx = __right(idx)
+        leftIdx = self.__left(idx)
+        rightIdx = self.__right(idx)
         smallest = idx
         if leftIdx > 0 and self.__array[leftIdx] < self.__array[idx]: smallest = leftIdx
-        if rightIdx > 0 and self.__array[rightIdx] < self.__array[idx]: smallest = rightIdx
+        if rightIdx > 0 and self.__array[rightIdx] < self.__array[smallest]: smallest = rightIdx
         if smallest != idx:
             self.__array[smallest], self.__array[idx] = self.__array[idx], self.__array[smallest]
-            self.__minHeapify(smallest)
+            self.__minReheapDown(smallest)
 
     def __minReheapUp(self, idx):
         pIdx = self.__parent(idx)
         if pIdx > 0 and self.__array[idx] < self.__array[pIdx]:
             self.__array[pIdx], self.__array[idx] = self.__array[idx], self.__array[pIdx]
-            self.__maxReheapUp(pIdx)
+            self.__minReheapUp(pIdx)
 
     def __heapify(self):
-        for i in range(len(self) / 2, 0, -1):
-            if self.maxHeap:
+        for i in range(int(len(self) / 2), 0, -1):
+            if self.__maxHeap:
                 self.__maxReheapDown(i)
             else:
                 self.__minReheapDown(i)
 
     def HeadKey(self):
         if len(self) <= 0: return None
-        return self.__array[1].key
+        return self.__array[1]
 
     def PopHead(self):
         if len(self) <= 0: return None
         self.__array[1], self.__array[len(self)] = self.__array[len(self)], self.__array[1]
         data = self.__array.pop()
-        if self.maxHeap: self.__maxReheapDown(1)
+        if self.__maxHeap: self.__maxReheapDown(1)
         else: self.__minReheapDown(1)
         return data
+
+    def __str__(self):
+        return str(self.__array[1:])
 
