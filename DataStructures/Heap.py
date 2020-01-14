@@ -9,6 +9,18 @@ class Entry(object):
     def __lt__(a, b):
         return a.key < b.key
 
+    def __ge__(a, b):
+        return a.key >= b.key
+
+    def __le__(a, b):
+        return a.key <= b.key
+
+    def __eq__(a, b):
+        return a.key == b.key
+
+    def __str__(self):
+        return '[' + str(self.key) + ':' + str(self.data) + ']'
+
 class Heap(object):
     def __init__(self, array = None, maxHeap = True):
         self.__array = [ None ]
@@ -89,6 +101,31 @@ class Heap(object):
         else: self.__minReheapDown(1)
         return data
 
+    def Push(self, value):
+        self.__array.append(value)
+        if (self.__maxHeap): self.__maxReheapUp(len(self))
+        else: self.__minReheapUp(len(self))
+
     def __str__(self):
-        return str(self.__array[1:])
+        string = "[ "
+        for v in self.__array[1:]:
+            string += str(v) + ', '
+        string += ']'
+        return string
+
+class PriorityQueue(object):
+    def __init__(self, maxHeap = True):
+        self.__heap = Heap(maxHeap = maxHeap)
+
+    def Push(self, key, data = None):
+        entry = Entry(key, data)
+        self.__heap.Push(entry)
+
+    def Pop(self):
+        tmp = self.__heap.PopHead()
+        if tmp is not None: return (tmp.key, tmp.data)
+        else: return None, None
+
+    def __str__(self):
+        return str(self.__heap)
 
