@@ -122,7 +122,7 @@ class BST(object):
         return rootNode
 
     def MaxNode(self):
-        return self.__treeMax(self.root)
+        return self.__maxNode(self.root)
 
     def __maxNode(self, rootNode):
         if rootNode is None: raise Exception("root node is None!")
@@ -134,7 +134,7 @@ class BST(object):
         if node is None: raise Exception("input node is None!")
         if node.right is not None: return self.__minNode(node.right)
         parentNode = node.p
-        while parentNode is not None and node == parentNode.right:
+        while parentNode is not None and node is parentNode.right:
             node = parentNode
             parentNode = parentNode.p
         return parentNode
@@ -143,7 +143,7 @@ class BST(object):
         if node is None: raise Exception("input node is None!")
         if node.left is not None: return self.__maxNode(node.left)
         parentNode = node.p
-        while parentNode is not None and node == parentNode.left:
+        while parentNode is not None and node is parentNode.left:
             node = parentNode
             parentNode = parentNode.p
         return parentNode
@@ -161,7 +161,7 @@ class BST(object):
         elif node.right is None: self.__transplant(node, node.left)
         else:
             successor = self.__minNode(node.right)
-            if successor.p != node:
+            if successor.p is not node:
                 self.__transplant(successor, successor.right)
                 successor.right = node.right
                 node.right.p = successor
