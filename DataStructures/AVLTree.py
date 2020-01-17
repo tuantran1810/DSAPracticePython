@@ -92,6 +92,8 @@ class AVLTree(BST.BST):
         self.__rebalance(newNode)
 
     def Delete(self, key):
-        node = super().Delete(key)
-        self.__rebalance(node)
+        node = self.Find(key)
+        if node is not None:
+            newNode = super()._deleteNode(node)
+            self.__rebalance(newNode)
         return node

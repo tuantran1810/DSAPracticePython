@@ -155,10 +155,14 @@ class BST(object):
         else: u.p.right = v
         if v is not None: v.p = u.p
 
-    def __deleteNode(self, node):
+    def _deleteNode(self, node):
         if node is None: raise Exception("input node is None")
-        if node.left is None: self.__transplant(node, node.right)
-        elif node.right is None: self.__transplant(node, node.left)
+        if node.left is None:
+            self.__transplant(node, node.right)
+            return node.right
+        elif node.right is None:
+            self.__transplant(node, node.left)
+            return node.left
         else:
             successor = self.__minNode(node.right)
             if successor.p is not node:
@@ -168,10 +172,11 @@ class BST(object):
             self.__transplant(node, successor)
             successor.left = node.left
             node.left.p = successor
+            return successor
 
     def Delete(self, key):
         node = self.Find(key)
-        if node is not None: self.__deleteNode(node)
+        if node is not None: self._deleteNode(node)
         return node
 
     def __invarianceCheck(self, node):

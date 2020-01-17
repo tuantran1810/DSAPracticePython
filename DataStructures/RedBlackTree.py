@@ -10,7 +10,7 @@ class RedBlackNode(BST.BSTNode):
 
 class RedBlackTree():
     def __init__(self):
-        self.NilNode = RedBlackNode(None, None, None, None, True)
+        self.NilNode = RedBlackNode(None, "Nil", None, None, True)
         self.NilNode.p = self.NilNode
         self.NilNode.left = self.NilNode
         self.NilNode.right = self.NilNode
@@ -108,7 +108,8 @@ class RedBlackTree():
         return buf
 
     def __inorderTraversal(self, node, buf):
-        if node is not None and node is not self.NilNode:
+        if node is None: raise Exception("node is None!")
+        if node is not self.NilNode:
             self.__inorderTraversal(node.left, buf)
             buf.append(node.key)
             self.__inorderTraversal(node.right, buf)
@@ -136,10 +137,11 @@ class RedBlackTree():
             buf.append(node.key)
 
     def Find(self, key):
-        return self.__findRecursive(self.root, key)
+        node = self.__findRecursive(self.root, key)
+        return node
 
     def __findRecursive(self, rootNode, key):
-        if node is None or node is self.NilNode: return None
+        if rootNode is None or rootNode is self.NilNode: return None
         if rootNode.key == key: return rootNode
         elif key >= rootNode.key: return self.__findRecursive(rootNode.right, key)
         else: return self.__findRecursive(rootNode.left, key)
@@ -185,10 +187,55 @@ class RedBlackTree():
         if u.p is self.NilNode: self.root = v
         elif u.p.left is u: u.p.left = v
         else: u.p.right = v
-        if v is not self.NilNode: v.p = u.p
+        v.p = u.p
 
-    def __deleteRebalance(self, node):
-
+    def __deleteRebalance(self, x):
+        if x is None: raise Exception(f"input None node! node = {x}")
+        comp = x is x.p.left
+        while x is not self.root and x.isBlack is True:
+            if comp:
+                w = x.p.right
+                if w.isBlack is False:
+                    w.isBlack = True
+                    x.p.isBlack = False
+                    self.__leftRotate(x.p)
+                    w = x.p.right
+                if w.left.isBlack and w.right.isBlack:
+                    w.isBlack = False
+                    x = x.p
+                elif w.right.isBlack:
+                    w.left.isBlack = True
+                    w.isBlack = False
+                    self.__rightRotate(w)
+                    w = x.p.right
+                else:
+                    w.isBlack = x.p.isBlack
+                    x.p.isBlack = True
+                    w.right.isBlack = True
+                    self.__leftRotate(x.p)
+                    x = self.root
+            else:
+                w = x.p.left
+                if w.isBlack is False:
+                    w.isBlack = True
+                    x.p.isBlack = False
+                    self.__rightRotate(x.p)
+                    w = x.p.left
+                if w.left.isBlack and w.right.isBlack:
+                    w.isBlack = False
+                    x = x.p
+                elif w.left.isBlack:
+                    w.right.isBlack = True
+                    w.isBlack = False
+                    self.__leftRotate(w)
+                    w = x.p.left
+                else:
+                    w.isBlack = x.p.isBlack
+                    x.p.isBlack = True
+                    w.left.isBlack = True
+                    self.__rightRotate(x.p)
+                    x = self.root
+        x.isBlack = True
 
     def __deleteNode(self, z):
         """
@@ -229,19 +276,31 @@ class RedBlackTree():
         if node is not None: self.__deleteNode(node)
         return node
 
+    def __blackHeight(self, node):
+        if node is None: raise Exception("None node input")
+        if node is self.NilNode: return 0
+        rightHeight = self.__blackHeight(node.right)
+        leftHeight = self.__blackHeight(node.left)
+        # if rightHeight != leftHeight: raise Exception(f"wrong height: left = {leftHeight}, right = {rightHeight}, node num = {node.key}")
+        return rightHeight + 1 if node.isBlack else rightHeight
+
     def __invarianceCheck(self, node):
         if node is None: raise Exception("input None node!")
         if node is self.NilNode: return True
+        self.__blackHeight(node)
         result = True
         if node.right is not self.NilNode: result = result and (node.right >= node)
         if node.left is not self.NilNode: result = result and (node.left < node)
+        if node.isBlack is False:
+            result = result and (node.left.isBlack and node.right.isBlack)
         return result and (self.__invarianceCheck(node.right)) and (self.__invarianceCheck(node.left))
 
     def InvarianceCheck(self):
         return self.__invarianceCheck(self.root)
 
     def __treeStringRecursive(self, node, level, side = 'root'):
-        if node is None or node is self.NilNode: return ""
+        if node is None: raise Exception("meet None child node!")
+        elif node is self.NilNode: return ""
         color = "B" if node.isBlack else "R"
         string = self.__treeStringRecursive(node.right, level + 1, 'R')
         string += '-'*6*level + ' ' + str(node) + '(' + side + ", " + color + ')' + '\n'

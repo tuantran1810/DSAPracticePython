@@ -18,6 +18,10 @@ while(True):
         if len(inpArgs) != 2: continue
         tree.Insert(int(inpArgs[1]))
         print(tree)
+    elif inpArgs[0] == "F":
+        if len(inpArgs) != 2: continue
+        tree.Find(int(inpArgs[1]))
+        print(tree)
     elif inpArgs[0] == "Min": print(tree.MinNode())
     elif inpArgs[0] == "Max": print(tree.MaxNode())
 
