@@ -187,22 +187,41 @@ class RedBlackTree():
         else: u.p.right = v
         if v is not self.NilNode: v.p = u.p
 
-    def __deleteNode(self, node):
-        if node is None or node is self.NilNode: raise Exception("None node input")
-        replaceNode = None
-        origNode = node
-        origIsBlack = node.isBlack
-        if node.left is self.NilNode:
-            replaceNode = node.right
-            self.__transplant(node, node.right)
-        elif node.right is self.NilNode:
-            replaceNode = node.left
-            self.__transplant(node, node.left)
+    def __deleteRebalance(self, node):
+
+
+    def __deleteNode(self, z):
+        """
+        z: deleted node
+        y: removed or moved within tree
+        x: move into y's original position
+        """
+        if z is None or z is self.NilNode: raise Exception("input None node")
+        y = z
+        x = None
+        yOrigIsBlack = y.isBlack
+        if z.left is self.NilNode:
+            x = z.right
+            self.__transplant(z, z.right)
+        elif z.right is self.NilNode:
+            x = z.left
+            self.__transplant(z, z.left)
         else:
-            origNode = self.__minNode(node.right)
-            origIsBlack = origNode.isBlack
-            replaceNode = origNode.right
-            if origNode.p is node:
+            y = self.__minNode(z.right)
+            yOrigIsBlack = y.isBlack
+            x = y.right
+            if y.p is z:
+                x.p = y
+            else:
+                self.__transplant(y, y.right)
+                y.right = z.right
+                y.right.p = y
+            self.__transplant(z, y)
+            y.left = z.left
+            y.left.p = y
+            y.isBlack = z.isBlack
+
+        if yOrigIsBlack: self.__deleteRebalance(x)
 
 
     def Delete(self, key):
