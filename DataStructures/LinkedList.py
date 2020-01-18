@@ -209,3 +209,29 @@ class LinkedList(object):
         for i, _ in enumerate(self.IterateForward()): n = i
         if (n + 1) == self.length: return True
         return False
+
+class Queue(LinkedList):
+    def __init__(self):
+        super().__init__()
+
+    def Enqueue(self, key, data = None):
+        self.PushHead(key, data)
+
+    def Dequeue(self):
+        if len(self) == 0: return None
+        node = self.PopTail()
+        if node is None: raise Exception("popped node is None!")
+        return (node.key, node.data)
+
+class Stack(LinkedList):
+    def __init__(self):
+        super().__init__()
+
+    def Push(self, key, data = None):
+        self.PushHead(key, data)
+
+    def Pop(self):
+        if len(self) == 0: return None
+        node = self.PopHead()
+        if node is None: raise Exception("popped node is None!")
+        return (node.key, node.data)
