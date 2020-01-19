@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, './../DataStructures/')
-from Graph import AdjacencyMatrix
-from LinkedList import Queue
+from Graph import UnweightedIndirectionAdjacencyMatrix
+from LinkedList import Queue, Stack
 
 class GraphAlgoritms():
     def __init__(self, adjacencyMatrix):
@@ -9,7 +9,8 @@ class GraphAlgoritms():
             raise Exception("invalid input param")
         self.__adjacencyMatrix = adjacencyMatrix
 
-    def BreadthFirstSearch(self, vertex):
+    def BreadthFirstSearchVertex(self, vertex, visited = None):
+        if vertex is None: raise Exception("input None vertex")
         if not self.__adjacencyMatrix.CheckVertexExist(vertex):
             raise Exception("node not exist in graph")
         queue = Queue()
@@ -18,7 +19,7 @@ class GraphAlgoritms():
         layer = {}
         layerCnt = 0
 
-        visited = set()
+        if visited is None: visited = set()
         visited.add(vertex)
         queue.Enqueue(None)
         queue.Enqueue(vertex)
@@ -44,25 +45,56 @@ class GraphAlgoritms():
             queue.Enqueue(None)
         return (distance, predecessor, layer)
 
-adj = AdjacencyMatrix(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'])
+    def BreadthFirstSearchAll(self):
+        visited = set()
+        for v in self.__adjacencyMatrix.AllVertexes():
+            if v in visited: continue
+            distance, predecessor, layer = self.BreadthFirstSearchVertex(v, visited)
+            yield v, distance, predecessor, layer
 
-adj.AddPath('a', 'b')
-adj.AddPath('a', 'c')
-adj.AddPath('b', 'd')
-adj.AddPath('b', 'e')
-adj.AddPath('d', 'f')
-adj.AddPath('e', 'g')
-adj.AddPath('e', 'h')
-adj.AddPath('g', 'i')
-adj.AddPath('g', 'j')
-adj.AddPath('h', 'k')
-adj.AddPath('i', 'l')
-adj.AddPath('j', 'l')
+    def __depthFirstSearch(self, v, visited, distance, predecessor):
+        for av, dis in self.__adjacencyMatrix.AllSuccessors(v):
+            if av in visited: continue
+            predecessor[av] = v
+            distance[av] = distance[v] + 1
+            visited.add(av)
+            self.__depthFirstSearch(av, visited, distance, predecessor)
 
-print(adj)
+    def DepthFirstSearchVertex(self, v, visited = None):
+        if v is None: raise Exception("input None vertex")
+        if not self.__adjacencyMatrix.CheckVertexExist(v):
+            raise Exception("node not exist in graph")
+        if visited is None: visited = set()
+        distance, predecessor = {}, {}
+        visited.add(v)
+        distance[v] = 0
+        predecessor[v] = None
+        self.__depthFirstSearch(v, visited, distance, predecessor)
+        return (distance, predecessor)
 
-alg = GraphAlgoritms(adj)
-distance, predecessor, layer = alg.BreadthFirstSearch('a')
-print(distance)
-print(predecessor)
-print(layer)
+    def DepthFirstSearchAll(self):
+        visited = set()
+        for v in self.__adjacencyMatrix.AllVertexes():
+            if v in visited: continue
+            distance, predecessor = self.DepthFirstSearchVertex(v, visited)
+            yield v, distance, predecessor
+
+    def __dfsTopoSortVertex(self, v, visited, stack):
+        if v is None or visited is None or stack is None: raise Exception("invalid input")
+        for av, _ in self.__adjacencyMatrix.AllSuccessors(v):
+            if av in visited: continue
+            visited.add(av)
+            self.__dfsTopoSortVertex(av, visited, stack)
+        stack.Push(v)
+
+    def DFSTopologicalSortVertex(self, v, visited = None):
+        if v is None: raise Exception("input None vertex")
+        if not self.__adjacencyMatrix.CheckVertexExist(v):
+            raise Exception("node not exist in graph")
+        if visited is None: visited = set()
+        stack = Stack()
+        visited.add(v)
+        self.__dfsTopoSortVertex(v, visited, stack)
+        while len(stack) > 0:
+            v, _ = stack.Pop()
+            yield v

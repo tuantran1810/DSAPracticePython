@@ -15,7 +15,7 @@ class AdjacencyMatrix(object):
             self.__map[v][node] = None
             self.__map[node][v] = None
 
-    def AddPath(self, startNode, endNode, value = 1):
+    def AddPath(self, startNode, endNode, value):
         if startNode is None or endNode is None: raise Exception("input None node")
         if value is None: raise Exception("input None value")
         if startNode not in self.__map: self.AddNewNode(startNode)
@@ -53,6 +53,9 @@ class AdjacencyMatrix(object):
     def VertexSet(self):
         return self.__map.keys()
 
+    def AllVertexes(self):
+        for k in self.__map.keys(): yield k
+
     def CheckVertexExist(self, v):
         if v is None: raise Exception("input None vertex")
         return v in self.__map
@@ -65,3 +68,31 @@ class AdjacencyMatrix(object):
                 result += "{:<10}".format(str(self.__map[kstart][kend])) + ' '
             result += '\n'
         return result
+
+class UnweightedIndirectionAdjacencyMatrix(AdjacencyMatrix):
+    def __init__(self, verticesList = None):
+        super().__init__(verticesList, False)
+
+    def AddPath(self, startNode, endNode):
+        super().AddPath(startNode, endNode, 1)
+
+class WeightedIndirectionAdjacencyMatrix(AdjacencyMatrix):
+    def __init__(self, verticesList = None):
+        super().__init__(verticesList, False)
+
+    def AddPath(self, startNode, endNode, value):
+        super().AddPath(startNode, endNode, value)
+
+class UnweightedDirectionAdjacencyMatrix(AdjacencyMatrix):
+    def __init__(self, verticesList = None):
+        super().__init__(verticesList, True)
+
+    def AddPath(self, startNode, endNode):
+        super().AddPath(startNode, endNode, 1)
+
+class WeightedDirectionAdjacencyMatrix(AdjacencyMatrix):
+    def __init__(self, verticesList = None):
+        super().__init__(verticesList, True)
+
+    def AddPath(self, startNode, endNode, value):
+        super().AddPath(startNode, endNode, value)
