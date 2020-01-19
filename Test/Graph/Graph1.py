@@ -3,8 +3,7 @@ sys.path.insert(0, './../../DataStructures/')
 sys.path.insert(0, './../../Graph/')
 sys.path.insert(0, './../DataStructures/')
 from Graph import UnweightedIndirectionAdjacencyMatrix
-from Algorithms import GraphAlgoritms
-from LinkedList import Queue, Stack
+from GraphAlgorithms import GraphAlgorithms
 
 adj = UnweightedIndirectionAdjacencyMatrix(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'x', 'y', 'z'])
 
@@ -25,7 +24,7 @@ adj.AddPath('y', 'x')
 
 print(adj)
 
-alg = GraphAlgoritms(adj)
+alg = GraphAlgorithms(adj)
 print("BFS:")
 for v, distance, predecessor, layer in alg.BreadthFirstSearchAll():
     print("Vertex: " + str(v))
@@ -43,6 +42,6 @@ for v, distance, predecessor in alg.DepthFirstSearchAll():
 
 print("Topological DFS:")
 lst = []
-for v in alg.DFSTopologicalSortVertex('a'):
+for v in alg.DFSTopologicalSortAll():
     lst.append(v)
 print(lst)

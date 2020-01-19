@@ -3,7 +3,7 @@ sys.path.insert(0, './../DataStructures/')
 from Graph import UnweightedIndirectionAdjacencyMatrix
 from LinkedList import Queue, Stack
 
-class GraphAlgoritms():
+class GraphAlgorithms():
     def __init__(self, adjacencyMatrix):
         if adjacencyMatrix is None:
             raise Exception("invalid input param")
@@ -47,10 +47,16 @@ class GraphAlgoritms():
 
     def BreadthFirstSearchAll(self):
         visited = set()
-        for v in self.__adjacencyMatrix.AllVertexes():
-            if v in visited: continue
-            distance, predecessor, layer = self.BreadthFirstSearchVertex(v, visited)
-            yield v, distance, predecessor, layer
+        if self.__adjacencyMatrix.IsDigraph():
+            for v in self.__adjacencyMatrix.ZeroInDegreeVertexes():
+                if v in visited: continue
+                distance, predecessor, layer = self.BreadthFirstSearchVertex(v, visited)
+                yield v, distance, predecessor, layer
+        else:
+            for v in self.__adjacencyMatrix.AllVertexes():
+                if v in visited: continue
+                distance, predecessor, layer = self.BreadthFirstSearchVertex(v, visited)
+                yield v, distance, predecessor, layer
 
     def __depthFirstSearch(self, v, visited, distance, predecessor):
         for av, dis in self.__adjacencyMatrix.AllSuccessors(v):
@@ -74,10 +80,16 @@ class GraphAlgoritms():
 
     def DepthFirstSearchAll(self):
         visited = set()
-        for v in self.__adjacencyMatrix.AllVertexes():
-            if v in visited: continue
-            distance, predecessor = self.DepthFirstSearchVertex(v, visited)
-            yield v, distance, predecessor
+        if self.__adjacencyMatrix.IsDigraph():
+            for v in self.__adjacencyMatrix.ZeroInDegreeVertexes():
+                if v in visited: continue
+                distance, predecessor = self.DepthFirstSearchVertex(v, visited)
+                yield v, distance, predecessor
+        else:
+            for v in self.__adjacencyMatrix.AllVertexes():
+                if v in visited: continue
+                distance, predecessor = self.DepthFirstSearchVertex(v, visited)
+                yield v, distance, predecessor
 
     def __dfsTopoSortVertex(self, v, visited, stack):
         if v is None or visited is None or stack is None: raise Exception("invalid input")
@@ -98,3 +110,15 @@ class GraphAlgoritms():
         while len(stack) > 0:
             v, _ = stack.Pop()
             yield v
+
+    def DFSTopologicalSortAll(self):
+        visited = set()
+        if self.__adjacencyMatrix.IsDigraph():
+            for v in self.__adjacencyMatrix.ZeroInDegreeVertexes():
+                if v in visited: continue
+                for sv in self.DFSTopologicalSortVertex(v, visited): yield sv
+        else:
+            for v in self.__adjacencyMatrix.AllVertexes():
+                if v in visited: continue
+                for sv in self.DFSTopologicalSortVertex(v, visited): yield sv
+

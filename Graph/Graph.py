@@ -2,11 +2,15 @@ class AdjacencyMatrix(object):
     def __init__(self, verticesList = None, digraph = False):
         self.__digraph = digraph
         self.__map = {}
+        self.__inDegreeMap = {}
+        self.__outDegreeMap = {}
         if verticesList is not None:
             for v in verticesList:
                 self.__map[v] = {}
                 for _v in verticesList:
                     self.__map[v][_v] = None
+                self.__inDegreeMap[v] = 0
+                self.__outDegreeMap[v] = 0
 
     def AddNewNode(self, node):
         if node in self.__map: return
@@ -20,8 +24,15 @@ class AdjacencyMatrix(object):
         if value is None: raise Exception("input None value")
         if startNode not in self.__map: self.AddNewNode(startNode)
         if endNode not in self.__map: self.AddNewNode(endNode)
+        isNewPath = self.__map[startNode][endNode] is None
         self.__map[startNode][endNode] = value
         if not self.__digraph: self.__map[endNode][startNode] = value
+        if isNewPath:
+            self.__outDegreeMap[startNode] += 1
+            self.__inDegreeMap[endNode] += 1
+            if not self.__digraph:
+                self.__outDegreeMap[endNode] += 1
+                self.__inDegreeMap[startNode] += 1
 
     def GetPath(self, startNode, endNode):
         if startNode is None or endNode is None: raise Exception("input None node")
@@ -33,8 +44,14 @@ class AdjacencyMatrix(object):
         if startNode is None or endNode is None: raise Exception("input None node")
         if startNode not in self.__map: raise Exception("cannot found start node in map")
         if endNode not in self.__map[startNode]: raise Exception("cannot found end node in map")
+        if self.__map[startNode][endNode] is None: return
         self.__map[startNode][endNode] = None
-        if not self.__digraph: self.__map[endNode][startNode] = None
+        self.__outDegreeMap[startNode] -= 1
+        self.__inDegreeMap[endNode] -= 1
+        if not self.__digraph:
+            self.__map[endNode][startNode] = None
+            self.__outDegreeMap[endNode] -= 1
+            self.__inDegreeMap[startNode] -= 1
 
     def AllSuccessors(self, v):
         if v is None: raise Exception("input None vertex")
@@ -59,6 +76,17 @@ class AdjacencyMatrix(object):
     def CheckVertexExist(self, v):
         if v is None: raise Exception("input None vertex")
         return v in self.__map
+
+    def ZeroInDegreeVertexes(self):
+        for v in self.__inDegreeMap.keys():
+            if self.__inDegreeMap[v] == 0: yield v
+
+    def ZeroOutDegreeVertexes(self):
+        for v in self.__outDegreeMap.keys():
+            if self.__outDegreeMap[v] == 0: yield v
+
+    def IsDigraph(self):
+        return self.__digraph
 
     def __str__(self):
         keys = sorted(self.__map.keys())
