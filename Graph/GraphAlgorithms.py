@@ -122,3 +122,29 @@ class GraphAlgorithms():
                 if v in visited: continue
                 for sv in self.DFSTopologicalSortVertex(v, visited): yield sv
 
+    def BFSTopologicalSortVertex(self, v, visited = None):
+        if v is None: raise Exception("input None vertex")
+        if not self.__adjacencyMatrix.CheckVertexExist(v):
+            raise Exception("node not exist in graph")
+        if visited is None: visited = set()
+        queue = Queue()
+        queue.Enqueue(v)
+        visited.add(v)
+        while len(queue) > 0:
+            v, _ = queue.Dequeue()
+            for av, _ in self.__adjacencyMatrix.AllSuccessors(v):
+                if av in visited: continue
+                visited.add(av)
+                queue.Enqueue(av)
+            yield v
+
+    def BFSTopologicalSortAll(self):
+        visited = set()
+        if self.__adjacencyMatrix.IsDigraph():
+            for v in self.__adjacencyMatrix.ZeroInDegreeVertexes():
+                if v in visited: continue
+                for sv in self.BFSTopologicalSortVertex(v, visited): yield sv
+        else:
+            for v in self.__adjacencyMatrix.AllVertexes():
+                if v in visited: continue
+                for sv in self.BFSTopologicalSortVertex(v, visited): yield sv

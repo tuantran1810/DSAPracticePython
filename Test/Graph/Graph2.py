@@ -45,3 +45,9 @@ lst = []
 for v in alg.DFSTopologicalSortAll():
     lst.append(v)
 print(lst)
+
+print("Topological BFS:")
+lst = []
+for v in alg.BFSTopologicalSortAll():
+    lst.append(v)
+print(lst)
