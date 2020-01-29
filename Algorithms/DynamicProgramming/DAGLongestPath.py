@@ -1,9 +1,7 @@
 import math
 import sys
 sys.path.insert(0, './../../Graph/')
-sys.path.insert(0, './../../DataStructures/')
 from Graph import WeightedDirectionAdjacencyMatrix
-from LinkedList import Stack
 
 class DAGLongestPath(object):
     def __init__(self, matrix):
