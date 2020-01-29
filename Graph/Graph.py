@@ -27,6 +27,10 @@ class AdjacencyMatrix(object):
         isNewPath = self.__map[startNode][endNode] is None
         self.__map[startNode][endNode] = value
         if not self.__digraph: self.__map[endNode][startNode] = value
+        if startNode not in self.__outDegreeMap: self.__outDegreeMap[startNode] = 0
+        if endNode not in self.__outDegreeMap: self.__outDegreeMap[endNode] = 0
+        if startNode not in self.__inDegreeMap: self.__inDegreeMap[startNode] = 0
+        if endNode not in self.__inDegreeMap: self.__inDegreeMap[endNode] = 0
         if isNewPath:
             self.__outDegreeMap[startNode] += 1
             self.__inDegreeMap[endNode] += 1
@@ -55,7 +59,7 @@ class AdjacencyMatrix(object):
 
     def AllSuccessors(self, v):
         if v is None: raise Exception("input None vertex")
-        if v not in self.__map: raise Exception("input vertex not in graph")
+        if v not in self.__map: raise Exception(f"input vertex not in graph ({v})")
         adj = self.__map[v]
         for k in adj.keys():
             if adj[k] is not None: yield (k, adj[k])
