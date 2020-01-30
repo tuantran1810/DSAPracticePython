@@ -9,18 +9,30 @@ class DAGLongestPath(object):
 
     def __call__(self, s, t):
         path = {}
+        recorded = {}
         for v in self.matrix.AllVertexes():
             path[(v, v)] = 0
-        return self.__longestPath(s, t, path)
+        tmp = self.__longestPath(s, t, path, recorded)
+        recordedPath = []
+        while(t in recorded):
+            recordedPath.append(t)
+            t = recorded[t]
+        recordedPath.append(t)
+        recordedPath.reverse()
+        return (tmp, recordedPath)
 
-    def __longestPath(self, s, t, path):
-        if (s, t) in path: return path[(s, t)]
+    def __longestPath(self, s, t, path, recorded):
+        if (s, t) in path:
+            return path[(s, t)]
         choosen = - math.inf
+        choosenV = -1
         for v, _ in self.matrix.AllSuccessors(s):
-            tmp = self.__longestPath(v, t, path)
+            tmp = self.__longestPath(v, t, path, recorded)
             pathlength = tmp + self.matrix.GetPath(s, v)
             if pathlength > choosen:
                 choosen = pathlength
+                choosenV = v
+        recorded[choosenV] = s
         path[(s, t)] = choosen
         return choosen
 
