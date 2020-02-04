@@ -91,6 +91,34 @@ class GraphAlgorithms():
                 distance, predecessor = self.DepthFirstSearchVertex(v, visited)
                 yield v, distance, predecessor
 
+    def DepthFirstSearchTime(self):
+        visited = set()
+        result = {}
+        result["visitedTime"] = {}
+        result["finishedTime"] = {}
+        result["distance"] = {}
+        result["predecessor"] = {}
+        time = 0
+        for v in self.__adjacencyMatrix.AllVertexes():
+            if v not in visited:
+                result["distance"][v] = 0
+                result["predecessor"][v] = None
+                time = self.__depthFirstSearchTimeVisit(v, visited, result, time)
+        return result
+
+    def __depthFirstSearchTimeVisit(self, v, visited, result, time):
+        time += 1
+        result["visitedTime"][v] = time
+        visited.add(v)
+        for sv, _ in self.__adjacencyMatrix.AllSuccessors(v):
+            if sv not in visited:
+                result["predecessor"][sv] = v
+                result["distance"][sv] = result["distance"][v] + 1
+                time = self.__depthFirstSearchTimeVisit(sv, visited, result, time)
+        time += 1
+        result["finishedTime"][v] = time
+        return time
+
     def __dfsTopoSortVertex(self, v, visited, stack):
         if v is None or visited is None or stack is None: raise Exception("invalid input")
         for av, _ in self.__adjacencyMatrix.AllSuccessors(v):
