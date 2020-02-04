@@ -92,14 +92,15 @@ class GraphAlgorithms():
                 yield v, distance, predecessor
 
     def DepthFirstSearchTime(self):
-        visited = set()
+        visited = {}
         result = {}
         result["visitedTime"] = {}
         result["finishedTime"] = {}
         result["distance"] = {}
         result["predecessor"] = {}
+        result["edgesType"] = {}
         time = 0
-        for v in self.__adjacencyMatrix.AllVertexes():
+        for v in self.__adjacencyMatrix.AllInorderedVertexes():
             if v not in visited:
                 result["distance"][v] = 0
                 result["predecessor"][v] = None
@@ -109,14 +110,23 @@ class GraphAlgorithms():
     def __depthFirstSearchTimeVisit(self, v, visited, result, time):
         time += 1
         result["visitedTime"][v] = time
-        visited.add(v)
-        for sv, _ in self.__adjacencyMatrix.AllSuccessors(v):
+        visited[v] = 'g'
+        for sv, _ in self.__adjacencyMatrix.AllInorderedSuccessors(v):
             if sv not in visited:
                 result["predecessor"][sv] = v
                 result["distance"][sv] = result["distance"][v] + 1
+                result["edgesType"][(v, sv)] = 't'
                 time = self.__depthFirstSearchTimeVisit(sv, visited, result, time)
+            elif visited[sv] == 'g':
+                result["edgesType"][(v, sv)] = 'b'
+            else:
+                vtime_u = result["visitedTime"][v]
+                vtime_sv = result["visitedTime"][sv]
+                if vtime_u < vtime_sv: result["edgesType"][(v, sv)] = 'f'
+                else: result["edgesType"][(v, sv)] = 'c'
         time += 1
         result["finishedTime"][v] = time
+        visited[v] = 'b'
         return time
 
     def __dfsTopoSortVertex(self, v, visited, stack):

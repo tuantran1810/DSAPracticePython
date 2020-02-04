@@ -64,6 +64,13 @@ class AdjacencyMatrix(object):
         for k in adj.keys():
             if adj[k] is not None: yield (k, adj[k])
 
+    def AllInorderedSuccessors(self, v):
+        if v is None: raise Exception("input None vertex")
+        if v not in self.__map: raise Exception(f"input vertex not in graph ({v})")
+        adj = self.__map[v]
+        for k in sorted(adj.keys()):
+            if adj[k] is not None: yield (k, adj[k])
+
     def AllPredecessor(self, v):
         if v is None: raise Exception("input None vertex")
         if v not in self.__map: raise Exception("input vertex not in graph")
@@ -76,6 +83,9 @@ class AdjacencyMatrix(object):
 
     def AllVertexes(self):
         for k in self.__map.keys(): yield k
+
+    def AllInorderedVertexes(self):
+        for k in sorted(self.__map.keys()): yield k
 
     def CheckVertexExist(self, v):
         if v is None: raise Exception("input None vertex")
