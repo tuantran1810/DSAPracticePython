@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, './../DataStructures/')
 from Graph import UnweightedIndirectionAdjacencyMatrix
 from LinkedList import Queue, Stack
+from Heap import PriorityQueue
 
 class GraphAlgorithms():
     def __init__(self, adjacencyMatrix):
@@ -186,3 +187,53 @@ class GraphAlgorithms():
             for v in self.__adjacencyMatrix.AllVertexes():
                 if v in visited: continue
                 for sv in self.BFSTopologicalSortVertex(v, visited): yield sv
+
+    def MST_Kruskal(self):
+        setIndex = {}
+        sets = {}
+        pq = PriorityQueue(maxHeap = False)
+        result = []
+        length = 0
+        for i, v in enumerate(self.__adjacencyMatrix.AllVertexes()):
+            setIndex[v] = i
+            sets[i] = set([v])
+
+        for s, e, v in self.__adjacencyMatrix.AllEdges():
+            pq.Push(v, (s, e))
+
+        while(len(pq) != 0):
+            w, e = pq.Pop()
+            start = e[0]
+            end = e[1]
+            setIndex1 = setIndex[start]
+            setIndex2 = setIndex[end]
+            if setIndex1 != setIndex2:
+                result.append(e)
+                length += w
+                if setIndex2 > setIndex1:
+                    for v in sets[setIndex2]: setIndex[v] = setIndex1
+                    sets[setIndex1] = sets[setIndex1].union(sets[setIndex2])
+                else:
+                    for v in sets[setIndex1]: setIndex[v] = setIndex2
+                    sets[setIndex2] = sets[setIndex2].union(sets[setIndex1])
+        return (result, length)
+
+    def MST_Prim(self):
+        pq = PriorityQueue(maxHeap = False)
+        treeVertexes = set()
+        result = []
+        length = 0
+        for v in self.__adjacencyMatrix.AllVertexes():
+            pq.Push(0, (v, v))
+            break
+
+        while(len(pq) > 0):
+            w, v = pq.Pop()
+            if v[1] in treeVertexes: continue
+            treeVertexes.add(v[1])
+            result.append(v)
+            length += w
+            for s, sw in self.__adjacencyMatrix.AllSuccessors(v[1]):
+                if s in treeVertexes: continue
+                pq.Push(sw, (v[1], s))
+        return (result[1:], length)

@@ -126,6 +126,9 @@ class PriorityQueue(object):
         if tmp is not None: return (tmp.key, tmp.data)
         else: return None, None
 
+    def __len__(self):
+        return len(self.__heap)
+
     def __str__(self):
         return str(self.__heap)
 

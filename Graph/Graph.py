@@ -4,6 +4,7 @@ class AdjacencyMatrix(object):
         self.__map = {}
         self.__inDegreeMap = {}
         self.__outDegreeMap = {}
+        self.__edgesSet = set()
         if verticesList is not None:
             for v in verticesList:
                 self.__map[v] = {}
@@ -26,7 +27,10 @@ class AdjacencyMatrix(object):
         if endNode not in self.__map: self.AddNewNode(endNode)
         isNewPath = self.__map[startNode][endNode] is None
         self.__map[startNode][endNode] = value
-        if not self.__digraph: self.__map[endNode][startNode] = value
+        self.__edgesSet.add((startNode, endNode))
+        if not self.__digraph:
+            self.__map[endNode][startNode] = value
+            self.__edgesSet.add((endNode, startNode))
         if startNode not in self.__outDegreeMap: self.__outDegreeMap[startNode] = 0
         if endNode not in self.__outDegreeMap: self.__outDegreeMap[endNode] = 0
         if startNode not in self.__inDegreeMap: self.__inDegreeMap[startNode] = 0
@@ -52,7 +56,9 @@ class AdjacencyMatrix(object):
         self.__map[startNode][endNode] = None
         self.__outDegreeMap[startNode] -= 1
         self.__inDegreeMap[endNode] -= 1
+        self.__edgesSet.remove((startNode, endNode))
         if not self.__digraph:
+            self.__edgesSet.remove((endNode, startNode))
             self.__map[endNode][startNode] = None
             self.__outDegreeMap[endNode] -= 1
             self.__inDegreeMap[startNode] -= 1
@@ -101,6 +107,10 @@ class AdjacencyMatrix(object):
 
     def IsDigraph(self):
         return self.__digraph
+
+    def AllEdges(self):
+        for s, e in self.__edgesSet:
+            yield (s, e, self.__map[s][e])
 
     def __str__(self):
         keys = sorted(self.__map.keys())
