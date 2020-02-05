@@ -148,3 +148,10 @@ class WeightedDirectionAdjacencyMatrix(AdjacencyMatrix):
 
     def AddPath(self, startNode, endNode, value):
         super().AddPath(startNode, endNode, value)
+
+def reverseGraph(adjMatrix):
+    if adjMatrix is None: raise Exception("Invalid input")
+    rMatrix = AdjacencyMatrix(digraph = adjMatrix.IsDigraph())
+    for s, e, w in adjMatrix.AllEdges():
+        rMatrix.AddPath(e, s, w)
+    return rMatrix
