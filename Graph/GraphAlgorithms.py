@@ -1,5 +1,6 @@
 import sys
 sys.path.insert(0, './../DataStructures/')
+import math
 from Graph import UnweightedIndirectionAdjacencyMatrix
 from LinkedList import Queue, Stack
 from Heap import PriorityQueue
@@ -237,3 +238,53 @@ class GraphAlgorithms():
                 if s in treeVertexes: continue
                 pq.Push(sw, (v[1], s))
         return (result[1:], length)
+
+    def __shortestPathRelax(self, dRecord, piRecord, u, v, w):
+        if dRecord is None: raise Exception("invalid input")
+        if u not in dRecord: raise Exception(f"u = {u} is not contained in dRecord!")
+        if v not in dRecord: raise Exception(f"v = {v} is not contained in dRecord!")
+
+        to_u = dRecord[u]
+        to_v = dRecord[v]
+        if to_v > to_u + w:
+            dRecord[v] = to_u + w
+            piRecord[v] = u
+
+    def __shortestPathPrepare(self, s):
+        dRecord, piRecord = {}, {}
+        for v in self.__adjacencyMatrix.AllVertexes():
+            dRecord[v] = math.inf
+            piRecord[v] = None
+        if s not in dRecord: raise Exception(f"source node s = {s} not in dRecord!")
+        dRecord[s] = 0
+        return dRecord, piRecord
+
+    def __shortestPathRecheck(self, dRecord):
+        for u, v, w in self.__adjacencyMatrix.AllEdges():
+            to_u = dRecord[u]
+            to_v = dRecord[v]
+            if to_v > to_u + w:
+                return False
+        return True
+
+    def ShortestPathBellmanFord(self, s):
+        dRecord, piRecord = self.__shortestPathPrepare(s)
+        nVertexes = len(self.__adjacencyMatrix.VertexSet())
+        for _ in range(nVertexes - 1):
+            for u, v, w in self.__adjacencyMatrix.AllEdges():
+                self.__shortestPathRelax(dRecord, piRecord, u, v, w)
+        result = self.__shortestPathRecheck(dRecord)
+        return result, dRecord, piRecord
+
+    def ShortestPathDAG(self, s):
+        dRecord, piRecord = self.__shortestPathPrepare(s)
+        for v in self.BFSTopologicalSortAll():
+            for sv, w in self.__adjacencyMatrix.AllSuccessors(v):
+                self.__shortestPathRelax(dRecord, piRecord, v, sv, w)
+        result = self.__shortestPathRecheck(dRecord)
+        return result, dRecord, piRecord
+
+
+
+
+
