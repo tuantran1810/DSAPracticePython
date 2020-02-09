@@ -246,9 +246,12 @@ class GraphAlgorithms():
 
         to_u = dRecord[u]
         to_v = dRecord[v]
+        modified = False
         if to_v > to_u + w:
             dRecord[v] = to_u + w
             piRecord[v] = u
+            modified = True
+        return modified
 
     def __shortestPathPrepare(self, s):
         dRecord, piRecord = {}, {}
@@ -283,6 +286,24 @@ class GraphAlgorithms():
                 self.__shortestPathRelax(dRecord, piRecord, v, sv, w)
         result = self.__shortestPathRecheck(dRecord)
         return result, dRecord, piRecord
+
+    def ShortestPathDijsktra(self, s):
+        dRecord, piRecord = self.__shortestPathPrepare(s)
+        pq = PriorityQueue(maxHeap = False)
+        for k in dRecord.keys():
+            pq.Push(dRecord[k], k)
+        processed = set()
+        while(len(pq) > 0):
+            d, v = pq.Pop()
+            processed.add(v)
+            for sv, w in self.__adjacencyMatrix.AllSuccessors(v):
+                if sv in processed: continue
+                if self.__shortestPathRelax(dRecord, piRecord, v, sv, w):
+                    pq.ModifyKeyOfData(sv, dRecord[sv])
+        result = self.__shortestPathRecheck(dRecord)
+        return result, dRecord, piRecord
+
+
 
 
 
