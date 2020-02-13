@@ -303,7 +303,48 @@ class GraphAlgorithms():
         result = self.__shortestPathRecheck(dRecord)
         return result, dRecord, piRecord
 
+    def __allPairsExtendedMatrix(self, L, pi):
+        if L is None: raise Exception("L matrix is None!")
+        nextL = {}
+        nextPi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            for j in self.__adjacencyMatrix.AllVertexes():
+                if i not in nextL: nextL[i] = {}
+                if i not in nextPi: nextPi[i] = {}
+                if i == j:
+                    nextL[i][j] = 0
+                    continue
+                nextL[i][j] = math.inf
+                nextPi[i][j] = pi[i][j]
+                for k in self.__adjacencyMatrix.AllVertexes():
+                    kjPath = self.__adjacencyMatrix.GetPath(k, j)
+                    if kjPath is None: continue
+                    if L[i][k] + kjPath < nextL[i][j]:
+                        nextL[i][j] = L[i][k] + kjPath
+                        nextPi[i][j] = k
+        return nextL, nextPi
 
+    def AllPairsExtendedShortestPath(self):
+        L = {}
+        pi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            for j in self.__adjacencyMatrix.AllVertexes():
+                if i not in L: L[i] = {}
+                if i not in pi: pi[i] = {}
+                path = self.__adjacencyMatrix.GetPath(i, j)
+                if path is not None:
+                    L[i][j] = path
+                    pi[i][j] = None
+                elif i == j:
+                    L[i][j] = 0
+                    pi[i][j] = None
+                else:
+                    L[i][j] = math.inf
+                    pi[i][j] = i
+        n = len(self.__adjacencyMatrix.VertexSet())
+        for _ in range(2, n):
+            L, pi = self.__allPairsExtendedMatrix(L, pi)
+        return L, pi
 
 
 
