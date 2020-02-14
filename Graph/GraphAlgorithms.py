@@ -304,7 +304,7 @@ class GraphAlgorithms():
         return result, dRecord, piRecord
 
     def __allPairsExtendedMatrix(self, L, pi):
-        if L is None: raise Exception("L matrix is None!")
+        if L is None or pi is None: raise Exception("L matrix or pi matrix is None!")
         nextL = {}
         nextPi = {}
         for i in self.__adjacencyMatrix.AllVertexes():
@@ -313,6 +313,7 @@ class GraphAlgorithms():
                 if i not in nextPi: nextPi[i] = {}
                 if i == j:
                     nextL[i][j] = 0
+                    nextPi[i][j] = None
                     continue
                 nextL[i][j] = math.inf
                 nextPi[i][j] = pi[i][j]
@@ -323,6 +324,22 @@ class GraphAlgorithms():
                         nextL[i][j] = L[i][k] + kjPath
                         nextPi[i][j] = k
         return nextL, nextPi
+
+    def __fastAllPairsExtended(self, L):
+        if L is None: raise Exception("L matrix or pi matrix is None!")
+        nextL = {}
+        allVertexes = L.keys()
+        for i in allVertexes:
+            for j in allVertexes:
+                if i not in nextL: nextL[i] = {}
+                if i == j:
+                    nextL[i][j] = 0
+                    continue
+                nextL[i][j] = math.inf
+                for k in allVertexes:
+                    if L[i][k] + L[k][j] < nextL[i][j]:
+                        nextL[i][j] = L[i][k] + L[k][j]
+        return nextL
 
     def AllPairsExtendedShortestPath(self):
         L = {}
@@ -345,6 +362,22 @@ class GraphAlgorithms():
         for _ in range(2, n):
             L, pi = self.__allPairsExtendedMatrix(L, pi)
         return L, pi
+
+    def FastAllPairsExtendedShortestPath(self):
+        L = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            for j in self.__adjacencyMatrix.AllVertexes():
+                if i not in L: L[i] = {}
+                path = self.__adjacencyMatrix.GetPath(i, j)
+                if path is not None: L[i][j] = path
+                elif i == j: L[i][j] = 0
+                else: L[i][j] = math.inf
+        n = len(self.__adjacencyMatrix.VertexSet())
+        m = 1
+        while m < n - 1:
+            L = self.__fastAllPairsExtended(L)
+            m *= 2
+        return L
 
 
 
