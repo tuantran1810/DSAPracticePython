@@ -325,21 +325,28 @@ class GraphAlgorithms():
                         nextPi[i][j] = k
         return nextL, nextPi
 
-    def __fastAllPairsExtended(self, L):
+    def __fastAllPairsExtended(self, L, pi):
         if L is None: raise Exception("L matrix or pi matrix is None!")
         nextL = {}
+        nextPi = {}
         allVertexes = L.keys()
         for i in allVertexes:
             for j in allVertexes:
                 if i not in nextL: nextL[i] = {}
+                if i not in nextPi: nextPi[i] = {}
                 if i == j:
                     nextL[i][j] = 0
+                    nextPi[i][j] = None
                     continue
                 nextL[i][j] = math.inf
+                nextPi[i][j] = pi[i][j]
                 for k in allVertexes:
+                    kjPath = self.__adjacencyMatrix.GetPath(k, j)
+                    if kjPath is None: continue
                     if L[i][k] + L[k][j] < nextL[i][j]:
                         nextL[i][j] = L[i][k] + L[k][j]
-        return nextL
+                        nextPi[i][j] = k
+        return nextL, nextPi
 
     def AllPairsExtendedShortestPath(self):
         L = {}
@@ -351,13 +358,13 @@ class GraphAlgorithms():
                 path = self.__adjacencyMatrix.GetPath(i, j)
                 if path is not None:
                     L[i][j] = path
-                    pi[i][j] = None
+                    pi[i][j] = i
                 elif i == j:
                     L[i][j] = 0
                     pi[i][j] = None
                 else:
                     L[i][j] = math.inf
-                    pi[i][j] = i
+                    pi[i][j] = None
         n = len(self.__adjacencyMatrix.VertexSet())
         for _ in range(2, n):
             L, pi = self.__allPairsExtendedMatrix(L, pi)
@@ -365,20 +372,62 @@ class GraphAlgorithms():
 
     def FastAllPairsExtendedShortestPath(self):
         L = {}
+        pi = {}
         for i in self.__adjacencyMatrix.AllVertexes():
             for j in self.__adjacencyMatrix.AllVertexes():
                 if i not in L: L[i] = {}
+                if i not in pi: pi[i] = {}
                 path = self.__adjacencyMatrix.GetPath(i, j)
-                if path is not None: L[i][j] = path
-                elif i == j: L[i][j] = 0
-                else: L[i][j] = math.inf
+                if path is not None:
+                    L[i][j] = path
+                    pi[i][j] = i
+                elif i == j:
+                    L[i][j] = 0
+                    pi[i][j] = None
+                else:
+                    L[i][j] = math.inf
+                    pi[i][j] = None
         n = len(self.__adjacencyMatrix.VertexSet())
         m = 1
         while m < n - 1:
-            L = self.__fastAllPairsExtended(L)
+            L, pi = self.__fastAllPairsExtended(L, pi)
             m *= 2
-        return L
+        return L, pi
 
+    def __floydWarshallStep(self, v, d, pi):
+        newd = {}
+        newpi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            if i not in newd: newd[i] = {}
+            if i not in newpi: newpi[i] = {}
+            for j in self.__adjacencyMatrix.AllVertexes():
+                newd[i][j] = d[i][j]
+                newpi[i][j] = pi[i][j]
+                if d[i][j] > d[i][v] + d[v][j]:
+                    newd[i][j] = d[i][v] + d[v][j]
+                    newpi[i][j] = pi[v][j]
+        return newd, newpi
+
+    def AllPairsFloydWarshallShortestPath(self):
+        d = {}
+        pi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            for j in self.__adjacencyMatrix.AllVertexes():
+                if i not in d: d[i] = {}
+                if i not in pi: pi[i] = {}
+                path = self.__adjacencyMatrix.GetPath(i, j)
+                if path is not None:
+                    d[i][j] = path
+                    pi[i][j] = i
+                elif i == j:
+                    d[i][j] = 0
+                    pi[i][j] = None
+                else:
+                    d[i][j] = math.inf
+                    pi[i][j] = None
+        for v in self.__adjacencyMatrix.AllVertexes():
+            d, pi = self.__floydWarshallStep(v, d, pi)
+        return d, pi
 
 
 
