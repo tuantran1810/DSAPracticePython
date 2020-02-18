@@ -303,6 +303,25 @@ class GraphAlgorithms():
         result = self.__shortestPathRecheck(dRecord)
         return result, dRecord, piRecord
 
+    def __prepareAllPairsMatrix(self):
+        L = {}
+        pi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            for j in self.__adjacencyMatrix.AllVertexes():
+                if i not in L: L[i] = {}
+                if i not in pi: pi[i] = {}
+                path = self.__adjacencyMatrix.GetPath(i, j)
+                if path is not None:
+                    L[i][j] = path
+                    pi[i][j] = i
+                elif i == j:
+                    L[i][j] = 0
+                    pi[i][j] = None
+                else:
+                    L[i][j] = math.inf
+                    pi[i][j] = None
+        return L, pi
+
     def __allPairsExtendedMatrix(self, L, pi):
         if L is None or pi is None: raise Exception("L matrix or pi matrix is None!")
         nextL = {}
@@ -346,22 +365,7 @@ class GraphAlgorithms():
         return nextL, nextPi
 
     def AllPairsExtendedShortestPath(self):
-        L = {}
-        pi = {}
-        for i in self.__adjacencyMatrix.AllVertexes():
-            for j in self.__adjacencyMatrix.AllVertexes():
-                if i not in L: L[i] = {}
-                if i not in pi: pi[i] = {}
-                path = self.__adjacencyMatrix.GetPath(i, j)
-                if path is not None:
-                    L[i][j] = path
-                    pi[i][j] = i
-                elif i == j:
-                    L[i][j] = 0
-                    pi[i][j] = None
-                else:
-                    L[i][j] = math.inf
-                    pi[i][j] = None
+        L, pi = self.__prepareAllPairsMatrix()
         n = len(self.__adjacencyMatrix.VertexSet())
         for _ in range(2, n):
             L, pi = self.__allPairsExtendedMatrix(L, pi)
@@ -369,22 +373,7 @@ class GraphAlgorithms():
 
     #Some thing wrong here!!!!
     def FastAllPairsExtendedShortestPath(self):
-        L = {}
-        pi = {}
-        for i in self.__adjacencyMatrix.AllVertexes():
-            for j in self.__adjacencyMatrix.AllVertexes():
-                if i not in L: L[i] = {}
-                if i not in pi: pi[i] = {}
-                path = self.__adjacencyMatrix.GetPath(i, j)
-                if path is not None:
-                    L[i][j] = path
-                    pi[i][j] = i
-                elif i == j:
-                    L[i][j] = 0
-                    pi[i][j] = None
-                else:
-                    L[i][j] = math.inf
-                    pi[i][j] = None
+        L, pi = self.__prepareAllPairsMatrix()
         n = len(self.__adjacencyMatrix.VertexSet())
         m = 1
         while m < n - 1:
@@ -407,22 +396,7 @@ class GraphAlgorithms():
         return newd, newpi
 
     def AllPairsFloydWarshallShortestPath(self):
-        d = {}
-        pi = {}
-        for i in self.__adjacencyMatrix.AllVertexes():
-            for j in self.__adjacencyMatrix.AllVertexes():
-                if i not in d: d[i] = {}
-                if i not in pi: pi[i] = {}
-                path = self.__adjacencyMatrix.GetPath(i, j)
-                if path is not None:
-                    d[i][j] = path
-                    pi[i][j] = i
-                elif i == j:
-                    d[i][j] = 0
-                    pi[i][j] = None
-                else:
-                    d[i][j] = math.inf
-                    pi[i][j] = None
+        d, pi = self.__prepareAllPairsMatrix()
         for v in self.__adjacencyMatrix.AllVertexes():
             d, pi = self.__floydWarshallStep(v, d, pi)
         return d, pi
