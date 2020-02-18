@@ -317,14 +317,13 @@ class GraphAlgorithms():
                     continue
                 nextL[i][j] = math.inf
                 nextPi[i][j] = pi[i][j]
-                for k in self.__adjacencyMatrix.AllVertexes():
-                    kjPath = self.__adjacencyMatrix.GetPath(k, j)
-                    if kjPath is None: continue
+                for k, kjPath in self.__adjacencyMatrix.AllPredecessor(j):
                     if L[i][k] + kjPath < nextL[i][j]:
                         nextL[i][j] = L[i][k] + kjPath
                         nextPi[i][j] = k
         return nextL, nextPi
 
+    #Some thing wrong here!!!!
     def __fastAllPairsExtended(self, L, pi):
         if L is None: raise Exception("L matrix or pi matrix is None!")
         nextL = {}
@@ -340,9 +339,7 @@ class GraphAlgorithms():
                     continue
                 nextL[i][j] = math.inf
                 nextPi[i][j] = pi[i][j]
-                for k in allVertexes:
-                    kjPath = self.__adjacencyMatrix.GetPath(k, j)
-                    if kjPath is None: continue
+                for k, kjPath in self.__adjacencyMatrix.AllPredecessor(j):
                     if L[i][k] + L[k][j] < nextL[i][j]:
                         nextL[i][j] = L[i][k] + L[k][j]
                         nextPi[i][j] = k
@@ -370,6 +367,7 @@ class GraphAlgorithms():
             L, pi = self.__allPairsExtendedMatrix(L, pi)
         return L, pi
 
+    #Some thing wrong here!!!!
     def FastAllPairsExtendedShortestPath(self):
         L = {}
         pi = {}
