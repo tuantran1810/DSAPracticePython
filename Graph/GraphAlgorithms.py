@@ -1,7 +1,9 @@
 import sys
 sys.path.insert(0, './../DataStructures/')
+import math
 from Graph import UnweightedIndirectionAdjacencyMatrix
 from LinkedList import Queue, Stack
+from Heap import PriorityQueue
 
 class GraphAlgorithms():
     def __init__(self, adjacencyMatrix):
@@ -191,3 +193,215 @@ class GraphAlgorithms():
         else:
             raise Exception("this graph is not a digraph")
         for v in self.__bfsTopoSortImp(visited, queue): yield v
+
+    def MST_Kruskal(self):
+        setIndex = {}
+        sets = {}
+        pq = PriorityQueue(maxHeap = False)
+        result = []
+        length = 0
+        for i, v in enumerate(self.__adjacencyMatrix.AllVertexes()):
+            setIndex[v] = i
+            sets[i] = set([v])
+
+        for s, e, v in self.__adjacencyMatrix.AllEdges():
+            pq.Push(v, (s, e))
+
+        while(len(pq) != 0):
+            w, e = pq.Pop()
+            start = e[0]
+            end = e[1]
+            setIndex1 = setIndex[start]
+            setIndex2 = setIndex[end]
+            if setIndex1 != setIndex2:
+                result.append(e)
+                length += w
+                if setIndex2 > setIndex1:
+                    for v in sets[setIndex2]: setIndex[v] = setIndex1
+                    sets[setIndex1] = sets[setIndex1].union(sets[setIndex2])
+                else:
+                    for v in sets[setIndex1]: setIndex[v] = setIndex2
+                    sets[setIndex2] = sets[setIndex2].union(sets[setIndex1])
+        return (result, length)
+
+    def MST_Prim(self):
+        pq = PriorityQueue(maxHeap = False)
+        treeVertexes = set()
+        result = []
+        length = 0
+        for v in self.__adjacencyMatrix.AllVertexes():
+            pq.Push(0, (v, v))
+            break
+
+        while(len(pq) > 0):
+            w, v = pq.Pop()
+            if v[1] in treeVertexes: continue
+            treeVertexes.add(v[1])
+            result.append(v)
+            length += w
+            for s, sw in self.__adjacencyMatrix.AllSuccessors(v[1]):
+                if s in treeVertexes: continue
+                pq.Push(sw, (v[1], s))
+        return (result[1:], length)
+
+    def __shortestPathRelax(self, dRecord, piRecord, u, v, w):
+        if dRecord is None: raise Exception("invalid input")
+        if u not in dRecord: raise Exception(f"u = {u} is not contained in dRecord!")
+        if v not in dRecord: raise Exception(f"v = {v} is not contained in dRecord!")
+
+        to_u = dRecord[u]
+        to_v = dRecord[v]
+        modified = False
+        if to_v > to_u + w:
+            dRecord[v] = to_u + w
+            piRecord[v] = u
+            modified = True
+        return modified
+
+    def __shortestPathPrepare(self, s):
+        dRecord, piRecord = {}, {}
+        for v in self.__adjacencyMatrix.AllVertexes():
+            dRecord[v] = math.inf
+            piRecord[v] = None
+        if s not in dRecord: raise Exception(f"source node s = {s} not in dRecord!")
+        dRecord[s] = 0
+        return dRecord, piRecord
+
+    def __shortestPathRecheck(self, dRecord):
+        for u, v, w in self.__adjacencyMatrix.AllEdges():
+            to_u = dRecord[u]
+            to_v = dRecord[v]
+            if to_v > to_u + w:
+                return False
+        return True
+
+    def ShortestPathBellmanFord(self, s):
+        dRecord, piRecord = self.__shortestPathPrepare(s)
+        nVertexes = len(self.__adjacencyMatrix.VertexSet())
+        for _ in range(nVertexes - 1):
+            for u, v, w in self.__adjacencyMatrix.AllEdges():
+                self.__shortestPathRelax(dRecord, piRecord, u, v, w)
+        result = self.__shortestPathRecheck(dRecord)
+        return result, dRecord, piRecord
+
+    def ShortestPathDAG(self, s):
+        dRecord, piRecord = self.__shortestPathPrepare(s)
+        for v in self.BFSTopologicalSortAll():
+            for sv, w in self.__adjacencyMatrix.AllSuccessors(v):
+                self.__shortestPathRelax(dRecord, piRecord, v, sv, w)
+        result = self.__shortestPathRecheck(dRecord)
+        return result, dRecord, piRecord
+
+    def ShortestPathDijsktra(self, s):
+        dRecord, piRecord = self.__shortestPathPrepare(s)
+        pq = PriorityQueue(maxHeap = False)
+        for k in dRecord.keys():
+            pq.Push(dRecord[k], k)
+        processed = set()
+        while(len(pq) > 0):
+            d, v = pq.Pop()
+            processed.add(v)
+            for sv, w in self.__adjacencyMatrix.AllSuccessors(v):
+                if sv in processed: continue
+                if self.__shortestPathRelax(dRecord, piRecord, v, sv, w):
+                    pq.ModifyKeyOfData(sv, dRecord[sv])
+        result = self.__shortestPathRecheck(dRecord)
+        return result, dRecord, piRecord
+
+    def __prepareAllPairsMatrix(self):
+        L = {}
+        pi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            for j in self.__adjacencyMatrix.AllVertexes():
+                if i not in L: L[i] = {}
+                if i not in pi: pi[i] = {}
+                path = self.__adjacencyMatrix.GetPath(i, j)
+                if path is not None:
+                    L[i][j] = path
+                    pi[i][j] = i
+                elif i == j:
+                    L[i][j] = 0
+                    pi[i][j] = None
+                else:
+                    L[i][j] = math.inf
+                    pi[i][j] = None
+        return L, pi
+
+    def __allPairsExtendedMatrix(self, L, pi):
+        if L is None or pi is None: raise Exception("L matrix or pi matrix is None!")
+        nextL = {}
+        nextPi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            for j in self.__adjacencyMatrix.AllVertexes():
+                if i not in nextL: nextL[i] = {}
+                if i not in nextPi: nextPi[i] = {}
+                if i == j:
+                    nextL[i][j] = 0
+                    nextPi[i][j] = None
+                    continue
+                nextL[i][j] = math.inf
+                nextPi[i][j] = pi[i][j]
+                for k, kjPath in self.__adjacencyMatrix.AllPredecessor(j):
+                    if L[i][k] + kjPath < nextL[i][j]:
+                        nextL[i][j] = L[i][k] + kjPath
+                        nextPi[i][j] = k
+        return nextL, nextPi
+
+    #Some thing wrong here!!!!
+    def __fastAllPairsExtended(self, L, pi):
+        if L is None: raise Exception("L matrix or pi matrix is None!")
+        nextL = {}
+        nextPi = {}
+        allVertexes = L.keys()
+        for i in allVertexes:
+            for j in allVertexes:
+                if i not in nextL: nextL[i] = {}
+                if i not in nextPi: nextPi[i] = {}
+                if i == j:
+                    nextL[i][j] = 0
+                    nextPi[i][j] = None
+                    continue
+                nextL[i][j] = math.inf
+                nextPi[i][j] = pi[i][j]
+                for k, kjPath in self.__adjacencyMatrix.AllPredecessor(j):
+                    if L[i][k] + L[k][j] < nextL[i][j]:
+                        nextL[i][j] = L[i][k] + L[k][j]
+                        nextPi[i][j] = k
+        return nextL, nextPi
+
+    def AllPairsExtendedShortestPath(self):
+        L, pi = self.__prepareAllPairsMatrix()
+        n = len(self.__adjacencyMatrix.VertexSet())
+        for _ in range(2, n):
+            L, pi = self.__allPairsExtendedMatrix(L, pi)
+        return L, pi
+
+    #Some thing wrong here!!!!
+    def FastAllPairsExtendedShortestPath(self):
+        L, pi = self.__prepareAllPairsMatrix()
+        n = len(self.__adjacencyMatrix.VertexSet())
+        m = 1
+        while m < n - 1:
+            L, pi = self.__fastAllPairsExtended(L, pi)
+            m *= 2
+        return L, pi
+
+    def __floydWarshallStep(self, v, d, pi):
+        newd = {}
+        newpi = {}
+        for i in self.__adjacencyMatrix.AllVertexes():
+            if i not in newd: newd[i] = {}
+            if i not in newpi: newpi[i] = {}
+            for j in self.__adjacencyMatrix.AllVertexes():
+                newd[i][j] = d[i][j]
+                newpi[i][j] = pi[i][j]
+                if d[i][j] > d[i][v] + d[v][j]:
+                    newd[i][j] = d[i][v] + d[v][j]
+                    newpi[i][j] = pi[v][j]
+        return newd, newpi
+
+    def AllPairsFloydWarshallShortestPath(self):
+        d, pi = self.__prepareAllPairsMatrix()
+        for v in self.__adjacencyMatrix.AllVertexes():
+            d, pi = self.__floydWarshallStep(v, d, pi)
+        return d, pi

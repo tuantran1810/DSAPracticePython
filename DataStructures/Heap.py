@@ -106,6 +106,24 @@ class Heap(object):
         if (self.__maxHeap): self.__maxReheapUp(len(self))
         else: self.__minReheapUp(len(self))
 
+    def Iterate(self):
+        for i, item in enumerate(self.__array[1:]): yield (i + 1, item)
+
+    def Recheck(self, index):
+        if index > len(self.__array) - 1: raise Exception(f"invalid input index = {index}")
+        if self.__maxHeap:
+            self.__maxReheapUp(index)
+            self.__maxReheapDown(index)
+        else:
+            self.__minReheapUp(index)
+            self.__minReheapDown(index)
+
+    def Modify(self, index, new):
+        if index > len(self.__array) - 1: raise Exception(f"invalid input index = {index}")
+        if new is None: raise Exception("input item is None!")
+        self.__array[index] = new
+        self.Recheck(index)
+
     def __str__(self):
         string = "[ "
         for v in self.__array[1:]:
@@ -125,6 +143,21 @@ class PriorityQueue(object):
         tmp = self.__heap.PopHead()
         if tmp is not None: return (tmp.key, tmp.data)
         else: return None, None
+
+    def __findDataItem(self, data):
+        for idx, item in self.__heap.Iterate():
+            if item.data == data: return (idx, item.key, item.data)
+        return -1, None, None
+
+    def ModifyKeyOfData(self, data, newKey):
+        if data is None: raise Exception("input data is None!")
+        idx, oldKey, oldData = self.__findDataItem(data)
+        if idx == -1: return
+        newItem = Entry(newKey, oldData)
+        self.__heap.Modify(idx, newItem)
+
+    def __len__(self):
+        return len(self.__heap)
 
     def __str__(self):
         return str(self.__heap)
