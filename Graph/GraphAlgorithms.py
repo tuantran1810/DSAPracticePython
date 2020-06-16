@@ -151,23 +151,18 @@ class GraphAlgorithms():
 
     def DFSTopologicalSortAll(self):
         visited = set()
+        stack = Stack()
         if self.__adjacencyMatrix.IsDigraph():
             for v in self.__adjacencyMatrix.ZeroInDegreeVertexes():
                 if v in visited: continue
-                for sv in self.DFSTopologicalSortVertex(v, visited): yield sv
+                self.__dfsTopoSortVertex(v, visited, stack)
         else:
-            for v in self.__adjacencyMatrix.AllVertexes():
-                if v in visited: continue
-                for sv in self.DFSTopologicalSortVertex(v, visited): yield sv
+            raise Exception("this graph is not a digraph")
+        while len(stack) > 0:
+            v, _ = stack.Pop()
+            yield v
 
-    def BFSTopologicalSortVertex(self, v, visited = None):
-        if v is None: raise Exception("input None vertex")
-        if not self.__adjacencyMatrix.CheckVertexExist(v):
-            raise Exception("node not exist in graph")
-        if visited is None: visited = set()
-        queue = Queue()
-        queue.Enqueue(v)
-        visited.add(v)
+    def __bfsTopoSortImp(self, visited, queue):
         while len(queue) > 0:
             v, _ = queue.Dequeue()
             for av, _ in self.__adjacencyMatrix.AllSuccessors(v):
@@ -176,13 +171,23 @@ class GraphAlgorithms():
                 queue.Enqueue(av)
             yield v
 
+    def BFSTopologicalSortVertex(self, v, visited = None, queue = None):
+        if v is None: raise Exception("input None vertex")
+        if not self.__adjacencyMatrix.CheckVertexExist(v):
+            raise Exception("node not exist in graph")
+        if visited is None: visited = set()
+        if queue is None: queue = Queue()
+        queue.Enqueue(v)
+        visited.add(v)
+        for sv in self.__dfsTopoSortImp(visited, queue): yield sv
+
     def BFSTopologicalSortAll(self):
         visited = set()
+        queue = Queue()
         if self.__adjacencyMatrix.IsDigraph():
             for v in self.__adjacencyMatrix.ZeroInDegreeVertexes():
-                if v in visited: continue
-                for sv in self.BFSTopologicalSortVertex(v, visited): yield sv
+                queue.Enqueue(v)
+                visited.add(v)
         else:
-            for v in self.__adjacencyMatrix.AllVertexes():
-                if v in visited: continue
-                for sv in self.BFSTopologicalSortVertex(v, visited): yield sv
+            raise Exception("this graph is not a digraph")
+        for v in self.__bfsTopoSortImp(visited, queue): yield v
